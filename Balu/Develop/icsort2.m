@@ -1,0 +1,44 @@
+% It returns the k smallest values of x using 
+% Paredes & Navarro. "Optimal incremental sorting.", Proc. 8th Workshop on 
+% Algorithm Engineering and Experiments and 3rd Workshop on Analytic 
+% Algorithmics and Combinatorics (ALENEX-ANALCO?06). 2006.
+
+function s = icsort2(x,k)
+
+ok = 0;
+
+s = [];
+
+while not(ok)
+    p = x(1);
+    i0 = (x<p);
+    if (length(s)+sum(i0))<=k
+        s = [s x(i0) p];
+        if length(s)>=k
+            ok = 1;
+        end
+        i1 = not(i0);i1(1)=0;
+        %x1 = x(x>p);
+        x1 = x(i1);
+        if ~isempty(x1)
+            x = x1;
+        else
+            % x = x(x<=p);
+            x = [x(i0) p];
+         end
+    else
+        x = x(i0);
+        %x1 = x(i0);
+        %if ~isempty(x1)
+        %    x = x1;
+        %else
+        %    x = min(x);
+        %    disp('*')
+        %end
+    end
+end
+
+toc
+j = sort(s);
+% length(s)
+s = j(1:k);

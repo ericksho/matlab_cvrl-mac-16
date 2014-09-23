@@ -1,0 +1,5 @@
+run vlfeat-0.9.19/toolbox/vl_setup
+
+run spams-matlab/start_spams
+
+addpath('Balu');

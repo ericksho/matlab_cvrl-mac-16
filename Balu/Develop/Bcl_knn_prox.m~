@@ -1,0 +1,107 @@
+% ds      = Bcl_knn(X,d,Xt,options)  Training & Testing together
+% options = Bcl_knn(X,d,options)     Training only
+% ds      = Bcl_knn(Xt,options)      Testing only
+%
+% Toolbox: Balu
+%    KNN (k-nearest neighbors) classifier using proximity search algorithm:
+%
+% Chavez, Figueroa, Navarro (2011): Effective Proximity Retrieval by
+% Ordering Permutations. PAMI 30(9):1647-1658.
+%
+%
+% op.k=15; op.k2= 15; op.f=20;tic;ds = Bcl_knn_prox(X1,d1,X2(1,:),op);toc;Bev_performance(ds,d2(1))
+%    Design data:
+%       X is a matrix with features (columns)
+%       d is the ideal classification for X
+%       options.k is the number of neighbors (default=10)
+%
+%    Test data:
+%       Xt is a matrix with features (columns)
+%
+%    Output:
+%       ds is the classification on test data
+%       options.kdtree contains information about the randomized kdtree
+%       (from function vl_kdtreebuilf of VLFeat Toolbox).
+%       options.string is a 8 character string that describes the performed
+%       classification (e.g., 'knn,10  ' means knn with k=10).
+%
+%    Example: Training & Test together:
+%       load datagauss             % simulated data (2 classes, 2 features)
+%       Bio_plotfeatures(X,d)      % plot feature space
+%       op.k = 10;
+%       ds = Bcl_knn(X,d,Xt,op);   % knn with 10 neighbors
+%       p = Bev_performance(ds,dt) % performance on test data
+%
+%    Example: Training only
+%       load datagauss             % simulated data (2 classes, 2 features)
+%       Bio_plotfeatures(X,d)      % plot feature space
+%       op.k = 10;
+%       op = Bcl_knn(X,d,op);      % knn with 10 neighbors
+%
+%    Example: Testing only (after training only example):
+%       ds = Bcl_knn(Xt,op);       % knn with 10 neighbors - testing
+%       p = Bev_performance(ds,dt) % performance on test data
+%
+%
+% D.Mery, PUC-DCC, 2010
+% http://dmery.ing.puc.cl
+
+
+function ds = Bcl_knn_prox(varargin)
+
+% U   : Training data (one row per instance)
+% P   : Permutants
+% Pix : Permutations
+
+[train,test,X,d,Xt,options] = Bcl_construct(varargin{:});
+options.string = sprintf('knnp,%2d ',options.k);
+K   = options.k;  % number of neighbors
+k   = options.k2; % variable k of the paper
+f   = options.f;
+if train
+    U   = X';
+    options.U = U;
+    n   = size(U,2);
+    if f>1
+        N = f;
+    else
+        N   = f*n;
+    end
+    t   = rand(n,1);[i,j]=sort(t);
+    P   = U(:,j(1:k));
+    options.P = P;
+    options.n = n;
+
+    % Indexing
+    options.kd  = vl_kdtreebuild(P);
+    options.Pix = vl_kdtreequery(kd,P,U,'NumNeighbors',k);
+    toc
+    ds = options;
+end
+if test
+    U         = options.U;
+    jj        = repmat((1:k)',1,n);
+    Nt        = size(Xt,1);
+    ds        = zeros(Nt,1);
+    PIq       = vl_kdtreequery(options.kd,options.P,Xt','NumNeighbors',k);
+    [PIs,PJs] = sort(single(PIq));
+    toc
+    for t = 1:Nt
+        Piq1    = PJs(:,t);
+        D1      = Piq1(options.Pix)-jj;
+        [ai,aj] = sort(sum(D1.*D1));
+        D2      = U(:,aj(1:N))-repmat(Xt(t,:)',1,N);
+        [id,jd] = sort(sum(D2.*D2));
+        ds(t)   = mode(d(aj(jd(1:K))));
+    end
+
+
+
+end
+
+
+
+
+
+
+

@@ -1,0 +1,28 @@
+b = 256;
+[N,M] = size(I);
+J = round(I)+1;
+H = single(zeros(N,M,b));
+B = J(1,1);
+H(1,1,B) = 1;
+i = 1;
+for j=2:M
+    B = J(1,j);
+    H(i,j,:) = H(i,j-1,:);
+    H(i,j,B) = H(i,j,B) + 1;
+end
+for i=2:N
+    B = J(i,1);
+    H(i,1,:) = H(i-1,1,:);
+    H(i,1,B) = H(i,1,B) + 1;
+    for j=2:N
+        B = J(i,j);
+        H(i,j,:) = H(i,j-1,:)+H(i-1,j,:)-H(i-1,j-1,:);
+        H(i,j,B) = H(i,j,B) + 1;
+    end
+    X = J(1:2,:),1:256);t = hist(J(1:2,:),1:256);
+    h = zeros(1,b);h(:) = H(i,M,:);clb;subplot(1,2,1);bar(t);subplot(1,2,2);bar(h);
+    enterpause
+end
+
+
+
