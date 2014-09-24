@@ -6,3 +6,5 @@ run('spams-matlab/start_spams')
 addpath(genpath('Balu'));
 %agregamos bsif al path
 addpath(genpath('bsif_code_and_data'));
+%agregamos clbp al path
+addpath(genpath('CLBP'));
